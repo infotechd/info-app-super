@@ -1,0 +1,7 @@
+packages:
+  - 'packages/backend'
+  - 'packages/mobile'
+  - 'packages/web'
+  - 'packages/common'
+  - 'packages/worker'
+
