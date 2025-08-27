@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { getDatabase } from '../config/database';
-import { logger } from '../utils/logger';
+import { logger, loggerUtils } from '../utils/logger';
+import { BadRequestError, PayloadTooLargeError } from '../utils/errors';
 
 interface FileMetadata {
     originalName: string;
@@ -54,6 +55,7 @@ export class UploadService {
                         filename: uniqueFilename,
                         size: metadata.size
                     });
+                    loggerUtils.logDatabase('create', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, true);
 
                     resolve({
                         fileId: uploadStream.id.toString(),
@@ -64,6 +66,7 @@ export class UploadService {
 
                 uploadStream.on('error', (error) => {
                     logger.error('Erro no upload para GridFS', { error, filename });
+                    loggerUtils.logDatabase('create', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, false, error as any);
                     reject(error);
                 });
             });
@@ -75,6 +78,7 @@ export class UploadService {
 
         } catch (error) {
             logger.error('Erro no serviço de upload', { error, filename });
+            loggerUtils.logDatabase('create', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, false, error as any);
             throw error;
         }
     }
@@ -86,11 +90,14 @@ export class UploadService {
         try {
             const bucket = this.getBucket();
             const files = await bucket.find({ _id: new mongoose.Types.ObjectId(fileId) }).toArray();
+            const bucketName = process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads';
+            loggerUtils.logDatabase('read', `${bucketName}.files`, true);
 
             return files.length > 0 ? files[0] : null;
 
         } catch (error) {
             logger.error('Erro ao obter informações do arquivo', { error, fileId });
+            loggerUtils.logDatabase('read', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, false, error as any);
             throw error;
         }
     }
@@ -103,15 +110,20 @@ export class UploadService {
             const bucket = this.getBucket();
             const skip = (page - 1) * limit;
 
+            const filter = { 'metadata.uploadedBy': userId } as const;
+
             const files = await bucket
-                .find({ 'metadata.uploadedBy': userId })
+                .find(filter)
                 .sort({ uploadDate: -1 })
                 .skip(skip)
                 .limit(limit)
                 .toArray();
 
-            const total = await bucket.find({ 'metadata.uploadedBy': userId }).count();
+            const db = getDatabase();
+            const bucketName = process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads';
+            const total = await db.collection(`${bucketName}.files`).countDocuments(filter);
 
+            loggerUtils.logDatabase('read', `${bucketName}.files`, true);
             return {
                 files: files.map(file => ({
                     fileId: file._id.toString(),
@@ -131,6 +143,7 @@ export class UploadService {
 
         } catch (error) {
             logger.error('Erro ao listar arquivos do usuário', { error, userId });
+            loggerUtils.logDatabase('read', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, false, error as any);
             throw error;
         }
     }
@@ -152,11 +165,14 @@ export class UploadService {
 
             await bucket.delete(new mongoose.Types.ObjectId(fileId));
 
+            const bucketName = process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads';
             logger.info('Arquivo deletado do GridFS', { fileId, userId });
+            loggerUtils.logDatabase('delete', `${bucketName}.files`, true);
             return true;
 
         } catch (error) {
             logger.error('Erro ao deletar arquivo', { error, fileId, userId });
+            loggerUtils.logDatabase('delete', `${process.env.GRIDFS_BUCKET_NAME || 'super_app_uploads'}.files`, false, error as any);
             return false;
         }
     }
@@ -176,9 +192,7 @@ export class UploadService {
         const allowedTypes = process.env.ALLOWED_FILE_TYPES?.split(',') || [
             'image/jpeg',
             'image/png',
-            'image/gif',
-            'video/mp4',
-            'video/quicktime'
+            'video/mp4'
         ];
 
         return allowedTypes.includes(mimetype);
@@ -201,17 +215,22 @@ export class UploadService {
         categoria?: string,
         descricao?: string
     ): Promise<UploadResult[]> {
-        try {
-            // Validar arquivos
-            for (const file of files) {
-                if (!this.isValidFileType(file.mimetype)) {
-                    throw new Error(`Tipo de arquivo não permitido: ${file.mimetype}`);
-                }
-                if (!this.isValidFileSize(file.size)) {
-                    throw new Error(`Arquivo muito grande: ${file.originalname}`);
-                }
-            }
+        // Regras de negócio e validações fora do try/catch
+        if (files.length > 5) {
+            throw new BadRequestError(`Limite de 5 arquivos por upload. Recebidos: ${files.length}`);
+        }
 
+        for (const file of files) {
+            if (!this.isValidFileType(file.mimetype)) {
+                throw new BadRequestError(`Tipo de arquivo não permitido: ${file.mimetype}`);
+            }
+            if (!this.isValidFileSize(file.size)) {
+                throw new PayloadTooLargeError(`Arquivo muito grande: ${file.originalname}`);
+            }
+        }
+
+        // Captura apenas erros de I/O durante o upload em si
+        try {
             // Upload de todos os arquivos
             const uploadPromises = files.map(file => {
                 const metadata: FileMetadata = {
@@ -236,7 +255,6 @@ export class UploadService {
             });
 
             return results;
-
         } catch (error) {
             logger.error('Erro no upload múltiplo', { error, userId });
             throw error;

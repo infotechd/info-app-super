@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import User from '../models/User';
-import config from '../config';
 import logger from '../utils/logger';
+import { verifyJwtWithRotation } from '../utils/jwt';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -29,8 +28,15 @@ export const authMiddleware = async (
             return;
         }
 
-        const decoded = jwt.verify(token, config.JWT_SECRET) as { userId: string };
-        const user = await User.findById(decoded.userId);
+        const decoded: any = verifyJwtWithRotation(token) as any;
+        const userId = (decoded && typeof decoded === 'object' && 'userId' in decoded)
+            ? (decoded as any).userId
+            : undefined;
+        if (!userId) {
+            res.status(401).json({ success: false, message: 'Token inválido' });
+            return;
+        }
+        const user = await User.findById(userId);
 
         if (!user) {
             res.status(401).json({
@@ -48,7 +54,7 @@ export const authMiddleware = async (
             return;
         }
 
-        // Mapear tipo de usuário do modelo (pt) para o padrão da API (en)
+        // Mapear tipo de 'usuário' do modelo (pt) para o padrão da API (en)
         const mapTipoToApi = (tipo: any): 'buyer' | 'provider' | 'advertiser' => {
             switch (tipo) {
                 case 'comprador':

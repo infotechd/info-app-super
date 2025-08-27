@@ -11,6 +11,7 @@ export interface OfertaServico {
         avaliacao: number;
     };
     imagens: string[]; // IMPORTANTE: é 'imagens', não 'imagem'
+    videos?: string[]; // URLs de vídeos (MP4) no GridFS
     localizacao: {
         cidade: string;
         estado: string;
@@ -25,7 +26,8 @@ export interface CreateOfertaInput {
     descricao: string;
     preco: number;
     categoria: string;
-    imagens?: File[];
+    imagens?: string[];
+    videos?: string[];
     localizacao: {
         cidade: string;
         estado: string;

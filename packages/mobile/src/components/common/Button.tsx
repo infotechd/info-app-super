@@ -6,7 +6,7 @@ import {
     ActivityIndicator,
     TouchableOpacityProps
 } from 'react-native';
-import { THEME_CONFIG } from '@/constants/config';
+import { THEME_CONFIG } from '../../constants/config';
 
 interface ButtonProps extends TouchableOpacityProps {
     title: string;
@@ -16,7 +16,7 @@ interface ButtonProps extends TouchableOpacityProps {
     fullWidth?: boolean;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+const Button: React.FC<ButtonProps> = ({
                                                   title,
                                                   variant = 'primary',
                                                   size = 'medium',
@@ -58,6 +58,8 @@ export const Button: React.FC<ButtonProps> = ({
         </TouchableOpacity>
     );
 };
+
+export default Button;
 
 const styles = StyleSheet.create({
     button: {

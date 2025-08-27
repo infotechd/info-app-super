@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '@/services/authService';
-import { User, AuthContextType, RegisterData } from '@/types';
+import { setAuthToken, clearAuthToken } from '@/services/api';
+import { User, AuthContextType, RegisterData, PendingRedirect } from '@/types';
+import { navigationRef } from '@/navigation/RootNavigation';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -13,6 +15,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [pendingRedirect, setPendingRedirect] = useState<PendingRedirect | null>(null);
 
     const isAuthenticated = !!user && !!token;
 
@@ -30,6 +33,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (storedToken && storedUser) {
                 setToken(storedToken);
                 setUser(JSON.parse(storedUser));
+                // Configura o token no cliente HTTP
+                setAuthToken(storedToken);
+            } else {
+                clearAuthToken();
             }
         } catch (error) {
             console.error('Erro ao carregar autenticação:', error);
@@ -38,16 +45,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
+    // Consolidated post-authentication handler to avoid duplication between login and register
+    const handleAuthSuccess = async (
+        response: { token: string; user: User },
+        nextRedirect: PendingRedirect | null
+    ) => {
+        // Persist token and user
+        await AsyncStorage.setItem('token', response.token);
+        await AsyncStorage.setItem('user', JSON.stringify(response.user));
+
+        // Update local state and HTTP client
+        setToken(response.token);
+        setUser(response.user);
+        setAuthToken(response.token);
+
+        // Handle any pending navigation redirect then clear it
+        if (nextRedirect && navigationRef.isReady()) {
+            try {
+                // Use an untyped navigate to satisfy TS while keeping runtime behavior
+                // This accommodates our global navigation ref without strict route typing
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (navigationRef as any)?.navigate(
+                    nextRedirect.routeName,
+                    nextRedirect.params ?? {}
+                );
+            } catch (e) {
+                // noop
+            } finally {
+                setPendingRedirect(null);
+            }
+        }
+    };
+
     const login = async (email: string, password: string) => {
         try {
             setIsLoading(true);
             const response = await authService.login({ email, password });
 
-            await AsyncStorage.setItem('token', response.token);
-            await AsyncStorage.setItem('user', JSON.stringify(response.user));
-
-            setToken(response.token);
-            setUser(response.user);
+            await handleAuthSuccess(response, pendingRedirect);
         } catch (error) {
             throw error;
         } finally {
@@ -60,11 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setIsLoading(true);
             const response = await authService.register(data);
 
-            await AsyncStorage.setItem('token', response.token);
-            await AsyncStorage.setItem('user', JSON.stringify(response.user));
-
-            setToken(response.token);
-            setUser(response.user);
+            await handleAuthSuccess(response, pendingRedirect);
         } catch (error) {
             throw error;
         } finally {
@@ -78,11 +109,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
             console.error('Erro no logout:', error);
         } finally {
+            // Limpa token do cliente HTTP e storage
+            clearAuthToken();
             await AsyncStorage.multiRemove(['token', 'user']);
             setToken(null);
             setUser(null);
         }
     };
+
+    const clearPendingRedirect = () => setPendingRedirect(null);
 
     const value: AuthContextType = {
         user,
@@ -92,6 +127,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         login,
         register,
         logout,
+        pendingRedirect,
+        setPendingRedirect,
+        clearPendingRedirect,
     };
 
     return (

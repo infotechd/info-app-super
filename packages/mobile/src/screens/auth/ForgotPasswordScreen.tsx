@@ -1,112 +1,53 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Text, TextInput, Button, Card } from 'react-native-paper';
-import { authService } from '@/services/authService';
-import { colors, spacing } from '@/styles/theme';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Button, Text, TextInput } from 'react-native-paper';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '@/types';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
 
 const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
-    const [email, setEmail] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = React.useState('');
 
-    const handleForgotPassword = async () => {
-        if (!email) {
-            Alert.alert('Erro', 'Digite seu email');
-            return;
-        }
+  return (
+    <View style={styles.container}>
+      <Text variant="headlineSmall" style={styles.title}>Recuperar senha</Text>
 
-        try {
-            setIsLoading(true);
-            await authService.forgotPassword(email);
-            Alert.alert(
-                'Sucesso',
-                'Instruções para redefinir sua senha foram enviadas para seu email',
-                [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
-            );
-        } catch (error: any) {
-            Alert.alert('Erro', error.response?.data?.message || 'Erro ao enviar email');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+      <TextInput
+        mode="outlined"
+        label="E-mail"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        style={styles.input}
+      />
 
-    return (
-        <View style={styles.container}>
-            <Card style={styles.card}>
-                <Card.Content>
-                    <Text variant="headlineMedium" style={styles.title}>
-                        Esqueci minha senha
-                    </Text>
-                    <Text variant="bodyMedium" style={styles.subtitle}>
-                        Digite seu email para receber instruções de redefinição
-                    </Text>
-
-                    <TextInput
-                        label="Email"
-                        value={email}
-                        onChangeText={setEmail}
-                        mode="outlined"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        style={styles.input}
-                    />
-
-                    <Button
-                        mode="contained"
-                        onPress={handleForgotPassword}
-                        loading={isLoading}
-                        disabled={isLoading}
-                        style={styles.button}
-                    >
-                        Enviar instruções
-                    </Button>
-
-                    <Button
-                        mode="text"
-                        onPress={() => navigation.navigate('Login')}
-                        style={styles.linkButton}
-                    >
-                        Voltar ao login
-                    </Button>
-                </Card.Content>
-            </Card>
-        </View>
-    );
+      <Button mode="contained" onPress={() => navigation.navigate('Login')}>
+        Enviar link de recuperação
+      </Button>
+      <Button onPress={() => navigation.navigate('Login')} style={styles.link}>
+        Voltar ao login
+      </Button>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: spacing.md,
-        backgroundColor: colors.background,
-    },
-    card: {
-        padding: spacing.md,
-    },
-    title: {
-        textAlign: 'center',
-        marginBottom: spacing.sm,
-        color: colors.primary,
-    },
-    subtitle: {
-        textAlign: 'center',
-        marginBottom: spacing.lg,
-        color: colors.textSecondary,
-    },
-    input: {
-        marginBottom: spacing.md,
-    },
-    button: {
-        marginTop: spacing.md,
-        marginBottom: spacing.sm,
-    },
-    linkButton: {
-        marginVertical: spacing.xs,
-    },
+  container: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
+  },
+  title: {
+    marginBottom: 16,
+  },
+  input: {
+    marginBottom: 12,
+  },
+  link: {
+    marginTop: 8,
+  },
 });
 
 export default ForgotPasswordScreen;

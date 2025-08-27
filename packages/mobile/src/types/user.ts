@@ -13,6 +13,11 @@ export interface User {
     createdAt: string;
 }
 
+export interface PendingRedirect {
+    routeName: string;
+    params?: any;
+}
+
 export interface AuthContextType {
     user: User | null;
     token: string | null;
@@ -21,6 +26,9 @@ export interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => void;
+    pendingRedirect: PendingRedirect | null;
+    setPendingRedirect: (redirect: PendingRedirect | null) => void;
+    clearPendingRedirect: () => void;
 }
 
 export interface RegisterData {

@@ -12,7 +12,9 @@ module.exports = function (api) {
           },
           extensions: ['.ts', '.tsx', '.js', '.json']
         }
-      ]
+      ],
+      // Reanimated plugin must be listed last
+      'react-native-reanimated/plugin'
     ]
   };
 };

@@ -5,11 +5,18 @@ import logger from '../utils/logger';
 export const validate = (schema: z.ZodSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            schema.parse({
+            // Parse and APPLY transformations/defaults back into the request
+            const parsed: any = schema.parse({
                 body: req.body,
                 query: req.query,
                 params: req.params
             });
+
+            if (parsed && typeof parsed === 'object') {
+                if (parsed.body !== undefined) (req as any).body = parsed.body;
+                if (parsed.query !== undefined) (req as any).query = parsed.query as any;
+                if (parsed.params !== undefined) (req as any).params = parsed.params as any;
+            }
             next();
         } catch (error) {
             if (error instanceof z.ZodError) {

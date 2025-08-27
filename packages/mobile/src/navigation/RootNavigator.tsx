@@ -5,11 +5,12 @@ import AuthNavigator from './AuthNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import LoadingScreen from '../screens/LoadingScreen';
 import { RootStackParamList } from '@/types';
+import { ROOT_ROUTES } from '@/navigation/RootNavigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator: React.FC = () => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isLoading } = useAuth();
 
     if (isLoading) {
         return <LoadingScreen />;
@@ -17,11 +18,8 @@ const RootNavigator: React.FC = () => {
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {isAuthenticated ? (
-                <Stack.Screen name="Main" component={MainTabNavigator} />
-            ) : (
-                <Stack.Screen name="Auth" component={AuthNavigator} />
-            )}
+            <Stack.Screen name={ROOT_ROUTES.Main} component={MainTabNavigator} />
+            <Stack.Screen name={ROOT_ROUTES.Auth} component={AuthNavigator} options={{ presentation: 'modal' }} />
         </Stack.Navigator>
     );
 };

@@ -9,6 +9,9 @@ import CommunityScreen from '../screens/app/CommunityScreen';
 import ProfileNavigator from './ProfileNavigator';
 import { MainTabParamList, OfertasStackParamList } from '@/types';
 import { colors } from '@/styles/theme';
+import CriarOfertaScreen from '@/screens/app/CriarOfertaScreen';
+import OfertaDetalheScreen from '@/screens/app/OfertaDetalheScreen';
+import RequireAuth from '@/navigation/guards/RequireAuth';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const OfertasStack = createNativeStackNavigator<OfertasStackParamList>();
@@ -20,12 +23,36 @@ const OfertasNavigator = () => (
             component={BuscarOfertasScreen}
             options={{ title: 'Buscar Serviços' }}
         />
+        <OfertasStack.Screen
+            name="CreateOferta"
+            options={{ title: 'Criar Oferta' }}
+            children={(props) => (
+                <RequireAuth>
+                    <CriarOfertaScreen {...props} />
+                </RequireAuth>
+            )}
+        />
+        <OfertasStack.Screen
+            name="OfferDetail"
+            component={OfertaDetalheScreen}
+            options={{ title: 'Detalhe da Oferta' }}
+        />
+        <OfertasStack.Screen
+            name="EditOferta"
+            options={{ title: 'Editar Oferta' }}
+            children={(props) => (
+                <RequireAuth>
+                    {React.createElement(require('@/screens/app/EditarOfertaScreen').default, props)}
+                </RequireAuth>
+            )}
+        />
     </OfertasStack.Navigator>
 );
 
 const MainTabNavigator: React.FC = () => {
     return (
         <Tab.Navigator
+            initialRouteName="Ofertas"
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName: string;

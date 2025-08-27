@@ -24,7 +24,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             setIsLoading(true);
             await login(email, password);
         } catch (error: any) {
-            Alert.alert('Erro', error.response?.data?.message || 'Erro ao fazer login');
+            const message = error?.message || error?.response?.data?.message || 'Erro ao fazer login';
+            Alert.alert('Erro', message);
         } finally {
             setIsLoading(false);
         }

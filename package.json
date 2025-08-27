@@ -12,33 +12,25 @@
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
-    "start": "concurrently \"pnpm:start:backend\" \"pnpm:start:mobile\" \"pnpm:start:web\"",
+    "start": "concurrently \"pnpm:start:backend\" \"pnpm:start:mobile\"",
     "start:mobile": "pnpm run start --filter packages/mobile",
-    "start:web": "pnpm run start --filter packages/web",
     "start:backend": "pnpm run dev --filter packages/backend",
-    "start:worker": "pnpm run start --filter packages/worker",
-    "start:full": "concurrently \"pnpm:start:backend\" \"pnpm:start:worker\" \"pnpm:start:mobile\" \"pnpm:start:web\"",
     "android:mobile": "pnpm run android --filter packages/mobile",
     "ios:mobile": "pnpm run ios --filter packages/mobile",
     "build:mobile": "pnpm run build --filter packages/mobile",
-    "build:web": "pnpm run build --filter packages/web",
     "build:backend": "pnpm run build --filter packages/backend",
-    "build:common": "pnpm run build --filter packages/common",
-    "build:worker": "pnpm run build --filter packages/worker",
-    "build": "pnpm run build:common && pnpm run build:backend && pnpm run build:worker && pnpm run build:mobile && pnpm run build:web",
-    "test:backend": "pnpm --filter packages/backend run test",
-    "test:mobile": "pnpm run test --filter packages/mobile",
-    "test:web": "pnpm run test --filter packages/web",
-    "test:common": "pnpm run test --filter packages/common",
-    "test:worker": "pnpm run test --filter packages/worker",
-    "test": "pnpm run test:common && pnpm run test:backend && pnpm run test:worker && pnpm run test:mobile && pnpm run test:web"
+    "build": "pnpm run build:backend && pnpm run build:mobile",
+    "test:backend": "pnpm --filter super-app-backend run test",
+    "test:mobile": "pnpm --filter super-app-mobile run test",
+    "test": "pnpm run test:backend && pnpm run test:mobile",
+    "test:connection": "node scripts/test-connection.mjs",
+    "install:mobile": "cd packages/mobile && pnpm install",
+    "install:backend": "cd packages/backend && pnpm install",
+    "install:all": "pnpm install && pnpm run install:mobile && pnpm run install:backend"
   },
   "workspaces": [
     "packages/backend",
-    "packages/mobile",
-    "packages/web",
-    "packages/common",
-    "packages/worker"
+    "packages/mobile"
   ],
   "devDependencies": {
     "@eslint/js": "^9.24.0",

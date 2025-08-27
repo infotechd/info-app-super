@@ -24,6 +24,7 @@ export type OfertasStackParamList = {
     BuscarOfertas: undefined;
     OfferDetail: { oferta: OfertaServico };
     CreateOferta: undefined;
+    EditOferta: { oferta: OfertaServico };
 };
 
 export type ProfileStackParamList = {

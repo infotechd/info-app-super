@@ -2,9 +2,10 @@ import http from 'http';
 import app from './app';
 import config from './config';
 import connectDB from './config/database';
-import { logger } from './utils/logger';
+import { logger, loggerUtils } from './utils/logger';
 
 const PORT = config.PORT;
+const HOST = (config as any).HOST || '0.0.0.0';
 
 async function start() {
   try {
@@ -13,8 +14,8 @@ async function start() {
 
     const server = http.createServer(app);
 
-    server.listen(PORT, () => {
-      logger.info(`Super App backend iniciado em http://localhost:${PORT}`);
+    server.listen(PORT, HOST, () => {
+      logger.info(`Super App backend iniciado em http://${HOST}:${PORT}`);
     });
 
     // Tratamento de erros do servidor
@@ -44,11 +45,13 @@ async function start() {
     process.on('SIGTERM', shutdown('SIGTERM'));
 
     process.on('unhandledRejection', (reason: any) => {
-      logger.error('Unhandled Rejection', { reason });
+      const err = reason instanceof Error ? reason : new Error(String(reason));
+      loggerUtils.logError(err, { scope: 'unhandledRejection' });
     });
 
     process.on('uncaughtException', (error: any) => {
-      logger.error('Uncaught Exception', { message: error?.message, stack: error?.stack });
+      const err = error instanceof Error ? error : new Error(String(error));
+      loggerUtils.logError(err, { scope: 'uncaughtException' });
       process.exit(1);
     });
   } catch (error: any) {
@@ -57,4 +60,4 @@ async function start() {
   }
 }
 
-start();
+void start();

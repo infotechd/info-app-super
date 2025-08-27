@@ -1,6 +1,7 @@
 import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
+import type { Request, Response, NextFunction } from 'express';
 
 // Garantir que a pasta de logs exista
 const logsDir = path.join(process.cwd(), 'logs');
@@ -91,12 +92,6 @@ export const logger = winston.createLogger({
     exitOnError: false,
 });
 
-// Stream para Morgan (logs HTTP)
-export const morganStream = {
-    write: (message: string) => {
-        logger.http(message.trim());
-    },
-};
 
 // Funções utilitárias
 export const loggerUtils = {
@@ -134,14 +129,18 @@ export const loggerUtils = {
     },
 
     // Log de upload
-    logUpload: (userId: string, files: any[], success = true) => {
-        logger.info('File Upload Event', {
-            userId,
-            filesCount: files.length,
-            totalSize: files.reduce((sum, file) => sum + file.size, 0),
-            fileTypes: files.map(f => f.mimetype),
-            success
-        });
+    logUpload: (userId?: string, files: Express.Multer.File[] = [], success = true) => {
+        try {
+            logger.info('File Upload Event', {
+                userId,
+                filesCount: Array.isArray(files) ? files.length : 0,
+                totalSize: (Array.isArray(files) ? files : []).reduce((sum, file) => sum + (file?.size ?? 0), 0),
+                fileTypes: (Array.isArray(files) ? files : []).map(f => f?.mimetype).filter(Boolean),
+                success
+            });
+        } catch (e) {
+            // não lançar erro por causa de log
+        }
     },
 
     // Log de operação de banco
@@ -164,7 +163,7 @@ export const loggerUtils = {
 };
 
 // Middleware de log para Express
-export const requestLogger = (req: any, res: any, next: any) => {
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();
 
     res.on('finish', () => {

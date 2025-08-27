@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import routes from './routes';
 import config from './config';
-import { requestLogger, logger } from './utils/logger';
+import { requestLogger, loggerUtils } from './utils/logger';
 
 // Cria e configura a aplicação Express
 const app: express.Application = express();
@@ -64,8 +64,15 @@ app.use((req: Request, res: Response) => {
 
 // Error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error('Unhandled error', { error: err?.message, stack: err?.stack });
+app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+  // Log estruturado do erro com contexto mínimo (sem PII)
+  loggerUtils.logError(err, {
+    path: req.path,
+    method: req.method,
+    userId: (req as any).user?.id,
+    params: req.params,
+    query: req.query,
+  });
   const status = typeof err?.status === 'number' ? err.status : 500;
   res.status(status).json({
     success: false,
