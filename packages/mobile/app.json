@@ -22,7 +22,6 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.superapp.mobile",
-      "buildNumber": "1",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua biblioteca para você anexar imagens e vídeos às ofertas.",
         "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para que você possa tirar fotos ou gravar vídeos para anexar às ofertas."
@@ -35,7 +34,6 @@
       },
       "package": "com.superapp.mobile",
       "versionCode": 1,
-      "usesCleartextTraffic": true,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
