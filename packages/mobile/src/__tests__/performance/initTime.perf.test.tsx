@@ -2,10 +2,10 @@ import React from 'react';
 import { render, waitFor, screen } from '@testing-library/react-native';
 import App from '../../../App';
 
-// Mock vector icons to avoid native dependency in Jest
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => {
+// Mock @expo/vector-icons to avoid native dependency in Jest
+jest.mock('@expo/vector-icons', () => {
   const React = require('react');
-  return () => React.createElement('IconMock');
+  return { MaterialCommunityIcons: () => React.createElement('IconMock') };
 });
 
 // Ensure reanimated mock is used (jest.setup also handles this, but keep redundancy for stability)
