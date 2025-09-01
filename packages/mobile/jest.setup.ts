@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 // Jest setup for Super App Mobile (Expo SDK 53)
 // AsyncStorage mock
 jest.mock('@react-native-async-storage/async-storage', () =>

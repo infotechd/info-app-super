@@ -3,11 +3,10 @@ import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from '@/navigation/MainTabNavigator';
 
-// Mock @expo/vector-icons to validate usage and avoid native dependency
-jest.mock('@expo/vector-icons', () => {
+// Mock react-native-vector-icons/MaterialCommunityIcons to validate usage and avoid native dependency
+jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => {
   const React = require('react');
-  const Mock = jest.fn(() => null);
-  return { MaterialCommunityIcons: Mock };
+  return jest.fn(() => null);
 });
 
 // Silence reanimated/gesture handler warnings in tests
@@ -29,8 +28,9 @@ describe('MainTabNavigator - padrões de navegação e ícones', () => {
     expect(await findByText('Comunidade')).toBeTruthy();
     expect(await findByText('Perfil')).toBeTruthy();
 
-    // MaterialCommunityIcons was mocked from @expo/vector-icons -> module exists
-    const { MaterialCommunityIcons } = require('@expo/vector-icons');
-    expect(jest.isMockFunction(MaterialCommunityIcons)).toBe(true);
+    // MaterialCommunityIcons default export was mocked from react-native-vector-icons/MaterialCommunityIcons -> module exists
+    const mod = require('react-native-vector-icons/MaterialCommunityIcons');
+    const Icon = mod.default || mod;
+    expect(jest.isMockFunction(Icon)).toBe(true);
   });
 });

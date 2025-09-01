@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
 // Initialize Dev Client first (if present) so React DevTools comes before RN ExceptionsManager
 if (__DEV__) {

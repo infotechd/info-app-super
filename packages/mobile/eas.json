@@ -7,6 +7,15 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "node": "18.20.4",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_USE_UNPACKED_PNPM": "1",
+        "EXPO_USE_WORKSPACES": "1"
+      },
+      "cache": {
+        "disabled": true
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -16,6 +25,12 @@
     },
     "preview": {
       "distribution": "internal",
+      "node": "18.20.4",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_USE_UNPACKED_PNPM": "1",
+        "EXPO_USE_WORKSPACES": "1"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
@@ -24,6 +39,12 @@
       }
     },
     "production": {
+      "node": "18.20.4",
+      "env": {
+        "NODE_ENV": "production",
+        "EXPO_USE_UNPACKED_PNPM": "1",
+        "EXPO_USE_WORKSPACES": "1"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
