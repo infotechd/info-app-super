@@ -4,9 +4,8 @@ node_modules/
 .pnp.js
 
 # Production builds
-/build
-/dist
-*.tgz
+build/
+dist/
 
 # Runtime data
 pids
@@ -68,7 +67,7 @@ jspm_packages/
 .env.production.local
 
 # parcel-bundler cache
-.cache
+.cache/
 .parcel-cache
 
 # Next.js build output
@@ -76,10 +75,8 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
-.cache/
 public
 
 # Storybook build outputs
@@ -115,13 +112,12 @@ Thumbs.db
 *~
 
 # Expo
-.expo/
+**/.expo/
 .expo-shared/
 web-build/
 
 # React Native
 # Xcode
-build/
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -140,8 +136,6 @@ DerivedData
 project.xcworkspace
 
 # Android/IntelliJ
-build/
-.idea
 .gradle
 local.properties
 *.iml
@@ -149,6 +143,8 @@ local.properties
 
 # Bundle artifacts
 *.jsbundle
+*.apk
+*.aab
 
 # CocoaPods
 /ios/Pods/
@@ -167,4 +163,3 @@ temp-uploads/
 
 # Worker files
 worker-temp/
-

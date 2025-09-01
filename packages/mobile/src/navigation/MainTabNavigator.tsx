@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+type IconName = React.ComponentProps<typeof Icon>['name'];
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BuscarOfertasScreen from '../screens/app/BuscarOfertasScreen';
 import AgendaScreen from '../screens/app/AgendaScreen';
@@ -55,7 +56,7 @@ const MainTabNavigator: React.FC = () => {
             initialRouteName="Ofertas"
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
-                    let iconName: string;
+                    let iconName: IconName;
 
                     switch (route.name) {
                         case 'Ofertas':
@@ -74,7 +75,7 @@ const MainTabNavigator: React.FC = () => {
                             iconName = focused ? 'account' : 'account-outline';
                             break;
                         default:
-                            iconName = 'help';
+                            iconName = 'help-circle';
                     }
 
                     return <Icon name={iconName} size={size} color={color} />;
